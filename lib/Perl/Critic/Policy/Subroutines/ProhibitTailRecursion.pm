@@ -1,6 +1,6 @@
 package Perl::Critic::Policy::Subroutines::ProhibitTailRecursion;
 
-# ABSTRACT: Do not call a sub from itself: perl gives every call a stack frame.
+# ABSTRACT: Do not call a sub from itself: Perl gives every call a stack frame.
 
 use strict;
 use warnings FATAL => 'all';
@@ -79,6 +79,17 @@ There is nothing to configure.
 
 =cut
 
+=head2 METHODS
+
+What L<Perl::Critic::Policy> asks of a policy, answered here rather than called
+from anywhere.
+
+=head3 supported_parameters
+
+None.
+
+=cut
+
 Readonly::Scalar my $DESC => 'A sub calls itself';
 Readonly::Scalar my $EXPL => 'perl gives every call a stack frame, a tail call too, so recursion uses a frame for each level of its input.  Walk it with an array and a c-style for loop, or use goto &name for a tail call';
 
@@ -86,9 +97,36 @@ Readonly::Scalar my $EXPL => 'perl gives every call a stack frame, a tail call t
 Readonly::Hash my %SELF => map { $_ => 1 } qw{$self $class __PACKAGE__};
 
 sub supported_parameters { return () }
-sub default_severity     { return $SEVERITY_MEDIUM }
-sub default_themes       { return qw{performance} }
-sub applies_to           { return qw{PPI::Statement::Sub PPI::Token::Word} }
+
+=head3 default_severity
+
+Medium: the code works until an input is deep enough, and then it fails.
+
+=cut
+
+sub default_severity { return $SEVERITY_MEDIUM }
+
+=head3 default_themes
+
+C<performance>.
+
+=cut
+
+sub default_themes { return qw{performance} }
+
+=head3 applies_to
+
+A named sub, for a call to it by name, and a word, for C<__SUB__>.
+
+=cut
+
+sub applies_to { return qw{PPI::Statement::Sub PPI::Token::Word} }
+
+=head3 violates
+
+One violation for each call of the sub to itself.
+
+=cut
 
 sub violates {
     my ( $self, $elem ) = @_;
