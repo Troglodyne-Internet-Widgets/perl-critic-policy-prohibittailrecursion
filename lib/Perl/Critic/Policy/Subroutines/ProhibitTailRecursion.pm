@@ -144,7 +144,12 @@ sub violates {
     my %names = map { $_ => 1 } ( $short, $name, _package_of($elem) . "::$short" );
 
     my $found = $block->find( sub { $_[1]->isa('PPI::Token::Word') || $_[1]->isa('PPI::Token::Symbol') } ) || [];
-    return map { $self->violation( $DESC, $EXPL, $_ ) } grep { !_in_nested_sub( $_, $elem ) && _calls( $_, \%names ) } @$found;
+    my @calls = grep { !_in_nested_sub( $_, $elem ) && _calls( $_, \%names ) } @$found;
+    my @violations;
+    foreach my $call (@calls) {
+        push @violations, $self->violation( $DESC, $EXPL, $call );
+    }
+    return @violations;
 }
 
 # Whether $e, a word or a symbol in the body of the sub, calls it.
